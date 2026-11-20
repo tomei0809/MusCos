@@ -19,7 +19,13 @@ const CALIB_CLICKS = 12;
 const CALIB_LISTEN = 4;      // 最初の4回は聴くだけ
 
 const $ = (id) => document.getElementById(id);
-const settings = load('rhythm.settings', { bpm: 96, level: '1', model: true });
+const settings = load('rhythm.settings', { bpm: 96, level: '1', model: true, ver: 2 });
+// ver 2 より前は、ページを開いただけで model: false が保存されていた。一度だけお手本をオンに戻す
+if (settings.ver !== 2) {
+  settings.model = true;
+  settings.ver = 2;
+  save('rhythm.settings', settings);
+}
 let calibMs = load('rhythm.calib', 0);
 const best = load('rhythm.best', {});
 
@@ -54,13 +60,13 @@ function buildGrid() {
   });
 }
 
-function setBpm(v) {
+function setBpm(v, persist = true) {
   const bpm = Math.min(180, Math.max(60, Math.round(Number(v) || 96)));
   settings.bpm = bpm;
   $('bpm').value = bpm;
   $('bpmNum').value = bpm;
   $('bpmOut').textContent = bpm;
-  save('rhythm.settings', settings);
+  if (persist) save('rhythm.settings', settings);
 }
 
 function showCalib() {
@@ -481,7 +487,7 @@ $('calibReset').addEventListener('click', () => {
 narrowQuery.addEventListener('change', () => { syncFold(); syncDockPadding(); });
 new ResizeObserver(syncDockPadding).observe($('dock'));
 
-setBpm(settings.bpm);
+setBpm(settings.bpm, false);
 buildGrid();
 resetMeter();
 showCalib();
