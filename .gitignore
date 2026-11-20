@@ -3,6 +3,9 @@ CLAUDE.md
 CLAUDE.local.md
 .claude/
 
+# デザイン案（検討用の資料）
+docs/design-*
+
 # OS が自動で作るファイル
 Thumbs.db
 desktop.ini

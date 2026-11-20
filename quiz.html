@@ -22,10 +22,12 @@
   </header>
 
   <h1 class="page-title">音あて</h1>
-  <p class="page-lead">鳴った音を、鍵盤で答えてください。</p>
+  <p class="page-lead">鳴った音を、下の鍵盤で答えてください。</p>
 
   <div class="quiz-layout">
-    <aside class="settings" aria-label="設定">
+  <details class="fold" id="settingsFold" open>
+    <summary><span id="foldSummary">簡単／1音</span><span class="fold-open">設定を変える</span></summary>
+    <div class="settings" aria-label="設定">
       <div>
         <h3>モード</h3>
         <div class="choice" id="modeChoice">
@@ -33,7 +35,6 @@
           <button type="button" data-mode="hard" aria-pressed="false">難関</button>
           <button type="button" data-mode="adv" aria-pressed="false">発展</button>
         </div>
-        <p class="mode-note" id="modeNote"></p>
       </div>
       <div>
         <h3>連続モード</h3>
@@ -44,52 +45,62 @@
           <button type="button" data-n="4" aria-pressed="false">4</button>
           <button type="button" data-n="5" aria-pressed="false">5</button>
         </div>
-        <p class="mode-note">2〜5を選ぶと、続けて鳴った音を順番どおりに答えます。</p>
       </div>
       <div>
         <h3>表示</h3>
-        <label class="check"><input type="checkbox" id="showLabels" checked> 鍵盤に音名を出す</label>
-        <div class="field" style="margin-top:8px">
-          <label for="labelStyle">音名の書き方</label>
-          <select id="labelStyle">
+        <div class="set-inline">
+          <label class="check"><input type="checkbox" id="showLabels" checked> 鍵盤に音名を出す</label>
+          <select id="labelStyle" aria-label="音名の書き方">
             <option value="solfege">ドレミ</option>
             <option value="letter">CDE</option>
           </select>
         </div>
       </div>
-      <p class="mode-note">PCのキー操作：A S D F G H J＝ド〜シ、W E T Y U＝黒鍵。難関では続けて 3〜6 でオクターブ。R でもう一度聴く、Enter で次へ。</p>
-    </aside>
+    </div>
+    <div class="settings set-notes">
+      <p class="mode-note" id="modeNote"></p>
+      <p class="mode-note">連続モードで2〜5を選ぶと、続けて鳴った音を順番どおりに答えます。</p>
+      <p class="mode-note key-help">PCのキー操作：A S D F G H J＝ド〜シ、W E T Y U＝黒鍵。難関では続けて 3〜5 でオクターブ。R でもう一度聴く、Enter で開始・次へ。</p>
+    </div>
+  </details>
 
-    <section class="panel quiz-panel" aria-live="polite">
-      <div class="disc" id="disc" aria-hidden="true"><i></i></div>
-      <h2 id="panelTitle">簡単</h2>
-      <p class="status" id="status">「開始」を押すと音が鳴ります。</p>
+  <section class="panel quiz-panel" aria-live="polite">
+    <div class="disc" id="disc" aria-hidden="true"><i></i></div>
+    <h2 id="panelTitle">簡単</h2>
+    <p class="status" id="status">「開始」を押すと音が鳴ります。</p>
 
-      <div class="btn-row">
-        <button type="button" class="btn primary" id="startBtn">開始</button>
-        <button type="button" class="btn" id="replayBtn" disabled>もう一度聴く</button>
-        <button type="button" class="btn accent" id="nextBtn" disabled>次の問題</button>
-      </div>
+    <button type="button" class="big-start" id="startBtn">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4 L20 12 L7 20 Z" fill="currentColor"/></svg>開始<kbd>Enter</kbd>
+    </button>
+    <div class="big-pair" id="playBtns" hidden>
+      <button type="button" class="big-start ghost" id="replayBtn">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12 A7 7 0 1 1 15.5 6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><path d="M13 2.5 L18 6 L13 9.5 Z" fill="currentColor"/></svg>もう一度<kbd>R</kbd>
+      </button>
+      <button type="button" class="big-start" id="nextBtn" disabled>次の問題<kbd>Enter</kbd></button>
+    </div>
 
-      <div class="result-line">
-        <div class="verdict" id="verdict"></div>
-        <div class="slots" id="slots"></div>
-      </div>
+    <div class="result-line">
+      <div class="verdict" id="verdict"></div>
+      <div class="slots" id="slots"></div>
+    </div>
 
-      <div id="piano"></div>
-      <div class="octaves" id="octaves" hidden>
-        <span>オクターブ</span>
-        <button type="button" data-oct="3">3</button>
-        <button type="button" data-oct="4">4</button>
-        <button type="button" data-oct="5">5</button>
-        <button type="button" data-oct="6">6</button>
-      </div>
-
-      <div class="stats" id="stats"></div>
-    </section>
+    <div class="stats" id="stats"></div>
+  </section>
   </div>
 
   <footer class="site-foot">音が出ます。スマホはマナーモードを解除してください。</footer>
+</div>
+
+<div class="tray" id="tray">
+  <div class="tray-inner">
+    <div class="octaves" id="octaves" hidden>
+      <span>オクターブ</span>
+      <button type="button" data-oct="3">3</button>
+      <button type="button" data-oct="4">4</button>
+      <button type="button" data-oct="5">5</button>
+    </div>
+    <div id="piano"></div>
+  </div>
 </div>
 </body>
 </html>

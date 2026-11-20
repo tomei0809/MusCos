@@ -46,7 +46,7 @@ export function loadPiano() {
       pianoKind = 'synth';
       resolve(pianoKind);
     };
-    // C3〜B6 を出すので A2〜C7 の範囲だけ読み込む（間の音は音程をずらして補う）
+    // C3〜B5 を出すので A2〜C7 の範囲だけ読み込む（間の音は音程をずらして補う）
     const urls = {};
     for (let oct = 2; oct <= 7; oct++) {
       for (const [name, file] of [['C', 'C'], ['D#', 'Ds'], ['F#', 'Fs'], ['A', 'A']]) {

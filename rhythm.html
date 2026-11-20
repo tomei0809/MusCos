@@ -28,33 +28,39 @@
     <div class="bpm-box"><output id="bpmOut">96</output><span>BPM</span></div>
   </div>
 
-  <section class="panel" style="margin-top:20px">
-    <div class="rhythm-controls">
-      <div class="field">
-        <label for="bpm">テンポ</label>
-        <input type="range" id="bpm" min="60" max="180" step="1" value="96">
-        <input type="number" id="bpmNum" min="60" max="180" value="96" aria-label="BPMを数字で入力">
+  <section class="panel rhythm-panel">
+    <details class="fold" id="settingsFold" open>
+      <summary><span id="foldSummary"></span><span class="fold-open">設定を変える</span></summary>
+      <div class="rhythm-controls">
+        <div class="field">
+          <label for="bpm">テンポ</label>
+          <input type="range" id="bpm" min="60" max="180" step="1" value="96">
+          <input type="number" id="bpmNum" min="60" max="180" value="96" aria-label="BPMを数字で入力">
+        </div>
+        <div class="field">
+          <label for="level">難しさ</label>
+          <select id="level"></select>
+        </div>
+        <label class="field"><input type="checkbox" id="model"> お手本の音を鳴らす</label>
       </div>
-      <div class="field">
-        <label for="level">難しさ</label>
-        <select id="level"></select>
+    </details>
+
+    <div class="play">
+      <div class="grid-wrap">
+        <div class="rgrid" id="grid"></div>
+        <div class="cursor" id="cursor"></div>
+        <div class="countin" id="countin" aria-live="assertive"></div>
       </div>
-      <label class="field"><input type="checkbox" id="model"> お手本の音を鳴らす</label>
+      <div class="judge" id="judge" aria-live="polite"></div>
+      <div class="dock" id="dock">
+        <div class="band">
+          <button type="button" class="btn primary" id="startBtn">開始<kbd>Enter</kbd></button>
+          <button type="button" class="btn" id="stopBtn" disabled>やめる<kbd>Esc</kbd></button>
+          <button type="button" class="btn" id="newBtn">別のリズムにする<kbd>N</kbd></button>
+        </div>
+        <button type="button" class="tap-pad" id="pad">ここを叩く<small>スペース・F・J</small></button>
+      </div>
     </div>
-    <div class="btn-row" style="margin-top:16px">
-      <button type="button" class="btn primary" id="startBtn">開始</button>
-      <button type="button" class="btn" id="stopBtn" disabled>やめる</button>
-      <button type="button" class="btn" id="newBtn">別のリズムにする</button>
-    </div>
-
-    <div class="grid-wrap">
-      <div class="rgrid" id="grid"></div>
-      <div class="cursor" id="cursor"></div>
-      <div class="countin" id="countin" aria-live="assertive"></div>
-    </div>
-
-    <div class="judge" id="judge" aria-live="polite"></div>
-    <button type="button" class="tap-pad" id="pad">ここを叩く<small>PCはスペースキーでも叩けます</small></button>
   </section>
 
   <section class="results" id="results" hidden>

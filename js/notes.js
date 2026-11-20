@@ -33,7 +33,7 @@ export function shortLabel(midi, style = 'solfege') {
 
 export const MODES = {
   easy: { name: '簡単', low: 60, high: 71, black: false, octave: false, note: 'ド〜シ（C4〜B4）の白鍵7音。音名を当てます。' },
-  hard: { name: '難関', low: 48, high: 83, black: false, octave: true, note: 'C3〜B6の白鍵28音。音名とオクターブを当てます。' },
+  hard: { name: '難関', low: 48, high: 83, black: false, octave: true, note: 'C3〜B5の白鍵21音。音名とオクターブを当てます。' },
   adv: { name: '発展', low: 60, high: 71, black: true, octave: false, note: 'C4〜B4の白鍵と黒鍵12音。♯/♭も当てます。' },
 };
 

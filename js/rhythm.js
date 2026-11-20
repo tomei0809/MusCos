@@ -97,6 +97,61 @@ function addTick(err, result) {
   $('meter').appendChild(t);
 }
 
+// ---------- 叩いたときのエフェクト ----------
+// 音符の SVG の中に描くので、画面の大きさが変わっても位置がずれない。
+const SVG_NS = 'http://www.w3.org/2000/svg';
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+function svgEl(tag, attrs, style) {
+  const el = document.createElementNS(SVG_NS, tag);
+  Object.entries(attrs).forEach(([k, v]) => el.setAttribute(k, v));
+  Object.assign(el.style, style);
+  return el;
+}
+
+function ring(svg, x, y, r, width, color, { dash, delay = 0 } = {}) {
+  const c = svgEl('circle', { cx: x, cy: y, r, fill: 'none', 'stroke-width': width, class: 'fx' }, { stroke: color });
+  if (dash) c.setAttribute('stroke-dasharray', dash);
+  svg.appendChild(c);
+  const a = c.animate(
+    [{ transform: 'scale(.25)', opacity: 1 }, { transform: 'scale(1)', opacity: 0 }],
+    { duration: 460, delay, easing: 'cubic-bezier(.2,.7,.3,1)', fill: 'both' },
+  );
+  a.onfinish = () => c.remove();
+}
+
+/** ぴったり＝太い二重の輪、おしい＝点線の輪＋早い/遅いの矢印（残る） */
+function hitEffect(n) {
+  if (!n.el) return;
+  const head = n.el.querySelector('ellipse');
+  const svg = n.el.ownerSVGElement;
+  const x = Number(head.getAttribute('cx'));
+  const y = Number(head.getAttribute('cy'));
+  const motion = !reduceMotion.matches;
+  if (motion) {
+    n.el.animate([{ transform: `scale(${n.result === 'perfect' ? 1.5 : 1.2})` }, { transform: 'scale(1)' }], { duration: 280, easing: 'ease-out' });
+  }
+  if (n.result === 'perfect') {
+    if (motion) {
+      ring(svg, x, y, 18, 2.6, 'var(--ink)');
+      ring(svg, x, y, 12, 1.6, 'var(--paper)', { delay: 70 });
+    }
+    return;
+  }
+  if (motion) ring(svg, x, y, 12, 1, 'var(--ink)', { dash: '2.5 2' });
+  const s = n.err < 0 ? -1 : 1; // 早い＝左向き、遅い＝右向き
+  const d = `M${x + 6 * s} 46 L${x} 42.5 V49.5 Z M${x} 45.2 H${x - 5 * s} V46.8 H${x} Z`;
+  svg.appendChild(svgEl('path', { d, class: 'fx' }, { fill: 'var(--ink)' }));
+}
+
+function missEffect(n) {
+  if (!n.el || reduceMotion.matches) return;
+  n.el.animate(
+    [{ transform: 'translateX(0)' }, { transform: 'translateX(-1.6px)' }, { transform: 'translateX(1.6px)' }, { transform: 'translateX(-1px)' }, { transform: 'translateX(0)' }],
+    { duration: 260 },
+  );
+}
+
 function showJudge(text, cls) {
   const j = $('judge');
   j.textContent = text;
@@ -116,8 +171,9 @@ function computeTiming(musicStart, spb) {
     n.perfect = Math.min(PERFECT_MAX, n.good / 2);
     n.result = null;
     n.err = 0;
-    n.el?.classList.remove('next', 'perfect', 'good', 'miss');
+    n.el?.classList.remove('perfect', 'good', 'miss');
   });
+  $('grid').querySelectorAll('.fx').forEach((el) => el.remove());
 }
 
 async function startPlay() {
@@ -140,7 +196,7 @@ async function startPlay() {
   if (settings.model) notes.forEach((n) => events.push({ time: n.time, kind: 'model' }));
   events.sort((a, b) => a.time - b.time);
 
-  run = { mode: 'play', spb, musicStart, end: musicStart + TOTAL_BEATS * spb, events, evIdx: 0, nowCell: -1, nextNote: null };
+  run = { mode: 'play', spb, musicStart, end: musicStart + TOTAL_BEATS * spb, events, evIdx: 0, nowCell: -1 };
   $('results').hidden = true;
   resetMeter();
   showJudge('', '');
@@ -204,24 +260,14 @@ function playFrame(now) {
     cursor.style.display = 'none';
   }
 
-  // 判定範囲を過ぎた音符はミス、次に叩く音符を強調
+  // 判定範囲を過ぎた音符はミス
   const judgeNow = now - calibMs / 1000;
-  let next = null;
   for (const n of notes) {
     if (n.result) continue;
-    if (judgeNow > n.time + n.good) {
-      n.result = 'miss';
-      n.el?.classList.remove('next');
-      n.el?.classList.add('miss');
-      continue;
-    }
-    next = n;
-    break;
-  }
-  if (next !== run.nextNote) {
-    run.nextNote?.el?.classList.remove('next');
-    next?.el?.classList.add('next');
-    run.nextNote = next;
+    if (judgeNow <= n.time + n.good) break;
+    n.result = 'miss';
+    n.el?.classList.add('miss');
+    missEffect(n);
   }
 
   if (now > run.end + 0.4) finishPlay();
@@ -255,8 +301,8 @@ function onTap(perfMs) {
   if (!target) return; // 休符や音符のないところで叩いても減点しない
   target.err = judged - target.time;
   target.result = Math.abs(target.err) <= target.perfect ? 'perfect' : 'good';
-  target.el?.classList.remove('next');
   target.el?.classList.add(target.result);
+  hitEffect(target);
   showJudge(target.result === 'perfect' ? 'ぴったり' : (target.err < 0 ? 'おしい（早い）' : 'おしい（遅い）'), target.result);
   addTick(target.err, target.result);
 }
@@ -266,7 +312,6 @@ function stopLoops() {
   clearInterval(run.timer);
   cancelAnimationFrame(run.raf);
   cells[run.nowCell]?.classList.remove('now');
-  run.nextNote?.el?.classList.remove('next');
   run = null;
   $('countin').textContent = '';
   $('cursor').style.display = 'none';
@@ -350,15 +395,59 @@ $('pad').addEventListener('pointerdown', (e) => {
   e.preventDefault();
   onTap(e.timeStamp);
 });
+// スペース・F・J＝叩く、Enter＝開始、Esc＝やめる、N＝別のリズム
+const TAP_KEYS = ['Space', 'KeyF', 'KeyJ'];
 document.addEventListener('keydown', (e) => {
-  if (e.code !== 'Space' || e.repeat) return;
+  if (e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
   if (e.target.closest('input, select')) return;
-  e.preventDefault(); // スクロールやボタンの誤作動を防ぐ
-  onTap(e.timeStamp);
+  if (TAP_KEYS.includes(e.code)) {
+    e.preventDefault(); // スクロールやボタンの誤作動を防ぐ
+    onTap(e.timeStamp);
+    return;
+  }
+  if (e.key === 'Escape' && run) {
+    stopRun();
+    return;
+  }
+  if (run) return;
+  if (e.key === 'Enter' && !e.target.closest('button, summary')) startPlay();
+  else if (e.code === 'KeyN') newRhythm();
 });
 document.addEventListener('keyup', (e) => {
-  if (e.code === 'Space' && !e.target.closest('input, select')) e.preventDefault();
+  if (TAP_KEYS.includes(e.code) && !e.target.closest('input, select')) e.preventDefault();
 });
+
+// ---------- 画面 ----------
+const narrowQuery = window.matchMedia('(max-width: 760px)');
+
+/** スマホでは設定をたたむ。PC では常に開いておく */
+function syncFold() {
+  $('settingsFold').open = !narrowQuery.matches;
+}
+
+function renderFoldSummary() {
+  const level = LEVELS[settings.level].replace(/（.*）/, '');
+  $('foldSummary').textContent = `${level}／${settings.model ? 'お手本あり' : 'お手本なし'}`;
+}
+
+/** スマホで画面下に固定した操作ボタンの高さぶん、ページの下に余白を取る */
+function syncDockPadding() {
+  const dock = $('dock');
+  document.body.style.paddingBottom = getComputedStyle(dock).position === 'fixed' ? `${dock.offsetHeight}px` : '';
+}
+
+function stopRun() {
+  const calib = run?.mode === 'calib';
+  stopLoops();
+  if (calib) showCalib();
+  else showJudge('', '');
+}
+
+function newRhythm() {
+  bars = generate(settings.level);
+  buildGrid();
+  $('results').hidden = true;
+}
 
 // ---------- 設定 ----------
 const levelSel = $('level');
@@ -369,21 +458,19 @@ levelSel.addEventListener('change', () => {
   save('rhythm.settings', settings);
   bars = generate(settings.level);
   buildGrid();
+  renderFoldSummary();
 });
 $('model').checked = settings.model;
 $('model').addEventListener('change', (e) => {
   settings.model = e.target.checked;
   save('rhythm.settings', settings);
+  renderFoldSummary();
 });
 $('bpm').addEventListener('input', (e) => setBpm(e.target.value));
 $('bpmNum').addEventListener('change', (e) => setBpm(e.target.value));
 $('startBtn').addEventListener('click', startPlay);
-$('stopBtn').addEventListener('click', () => { stopLoops(); showJudge('', ''); });
-$('newBtn').addEventListener('click', () => {
-  bars = generate(settings.level);
-  buildGrid();
-  $('results').hidden = true;
-});
+$('stopBtn').addEventListener('click', stopRun);
+$('newBtn').addEventListener('click', newRhythm);
 $('calibBtn').addEventListener('click', startCalib);
 $('calibReset').addEventListener('click', () => {
   calibMs = 0;
@@ -391,7 +478,13 @@ $('calibReset').addEventListener('click', () => {
   showCalib();
 });
 
+narrowQuery.addEventListener('change', () => { syncFold(); syncDockPadding(); });
+new ResizeObserver(syncDockPadding).observe($('dock'));
+
 setBpm(settings.bpm);
 buildGrid();
 resetMeter();
 showCalib();
+renderFoldSummary();
+syncFold();
+syncDockPadding();

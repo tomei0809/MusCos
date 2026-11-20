@@ -16,6 +16,7 @@ const state = {
   answers: [],     // 回答（MIDI 番号の配列）
   phase: 'idle',   // idle | answering | done
   pendingPc: null, // 2段階入力で選んだ音名
+  started: false,  // 一度でも出題したか
 };
 let piano = null;
 
@@ -31,6 +32,23 @@ function renderSettings() {
   $('labelStyle').value = settings.labelStyle;
   $('modeNote').textContent = MODES[settings.mode].note;
   $('panelTitle').textContent = MODES[settings.mode].name + (settings.count > 1 ? `　連続 ${settings.count}音` : '');
+  $('foldSummary').textContent = `${MODES[settings.mode].name}／${settings.count > 1 ? `連続${settings.count}音` : '1音'}`;
+}
+
+/** 出題前は「開始」、出題後は「もう一度／次の問題」を出す */
+function showPlayButtons(playing) {
+  $('startBtn').hidden = playing;
+  $('playBtns').hidden = !playing;
+}
+
+/** スマホでは設定をたたむ。PC では常に開いておく */
+function syncFold() {
+  $('settingsFold').open = !narrowQuery.matches;
+}
+
+/** 画面下に固定した鍵盤の高さぶん、ページの下に余白を取る */
+function syncTrayPadding() {
+  document.body.style.paddingBottom = `${$('tray').offsetHeight}px`;
 }
 
 function renderPiano() {
@@ -98,6 +116,7 @@ function playQuestion() {
 }
 
 async function start() {
+  if ($('startBtn').disabled) return; // 読み込み中に Enter を押したとき
   $('startBtn').disabled = true;
   try {
     await unlock();
@@ -109,8 +128,9 @@ async function start() {
   setStatus('ピアノの音を読み込んでいます…');
   const kind = await loadPiano();
   if (kind !== 'piano') setStatus('ピアノの音を読み込めなかったため、代わりの音で出題します。');
-  $('startBtn').textContent = 'はじめから';
   $('startBtn').disabled = false;
+  state.started = true;
+  showPlayButtons(true);
   next(kind === 'piano');
 }
 
@@ -123,7 +143,6 @@ function next(clearStatus = true) {
   setOctaveButtons(false);
   $('verdict').textContent = '';
   $('verdict').className = 'verdict';
-  $('replayBtn').disabled = false;
   $('nextBtn').disabled = true;
   $('disc').classList.remove('spin');
   if (clearStatus) setStatus(settings.count > 1 ? `${settings.count}音鳴ります。順番どおりに押してください。` : '鳴った音を押してください。');
@@ -201,10 +220,10 @@ function changeSettings(patch) {
   state.phase = 'idle';
   state.question = [];
   $('verdict').textContent = '';
-  $('replayBtn').disabled = true;
   $('nextBtn').disabled = true;
   $('disc').classList.remove('spin');
-  if ($('startBtn').textContent !== '開始') setStatus('設定を変えました。「はじめから」で出題します。');
+  showPlayButtons(false);
+  if (state.started) setStatus('設定を変えました。「開始」で出題します。');
   renderSettings();
   renderPiano();
   renderSlots();
@@ -241,7 +260,8 @@ $('octaves').addEventListener('click', (e) => {
 $('startBtn').addEventListener('click', start);
 $('replayBtn').addEventListener('click', () => { if (state.question.length) playQuestion(); });
 $('nextBtn').addEventListener('click', () => next());
-narrowQuery.addEventListener('change', () => { state.pendingPc = null; renderPiano(); });
+narrowQuery.addEventListener('change', () => { state.pendingPc = null; renderPiano(); syncFold(); });
+new ResizeObserver(syncTrayPadding).observe($('tray'));
 
 // ---------- キーボード操作 ----------
 const KEY_PC = { a: 0, w: 1, s: 2, e: 3, d: 4, f: 5, t: 6, g: 7, y: 8, h: 9, u: 10, j: 11 };
@@ -261,19 +281,19 @@ document.addEventListener('keydown', (e) => {
     const midi = midiOf(pc, 4);
     if (isBlack(midi) && !mode.black) return;
     if (mode.octave) {
-      // 難関：音名を選んでから 3〜6 でオクターブ
+      // 難関：音名を選んでから 3〜5 でオクターブ
       if (state.phase !== 'answering') return;
       state.pendingPc = pc;
       piano.clear('sel');
       piano.mark(midi, 'sel');
       setOctaveButtons(true);
-      setStatus(`${label(midi, { style: settings.labelStyle })} のオクターブを 3〜6 のキーで選んでください。`);
+      setStatus(`${label(midi, { style: settings.labelStyle })} のオクターブを 3〜5 のキーで選んでください。`);
     } else {
       onKey(midi);
     }
     return;
   }
-  if (mode.octave && state.pendingPc !== null && ['3', '4', '5', '6'].includes(k)) {
+  if (mode.octave && state.pendingPc !== null && ['3', '4', '5'].includes(k)) {
     const midi = midiOf(state.pendingPc, Number(k));
     state.pendingPc = null;
     setOctaveButtons(false);
@@ -285,4 +305,6 @@ document.addEventListener('keydown', (e) => {
 renderSettings();
 renderPiano();
 renderStats();
+syncFold();
+syncTrayPadding();
 loadPiano(); // 先に読み込みを始めておく（発音はユーザー操作後）

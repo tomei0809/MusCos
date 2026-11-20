@@ -38,7 +38,7 @@ button { cursor: pointer; }
 .site-foot { padding: 48px 0 32px; font-size: 13px; opacity: .6; }
 
 /* ---------- 見出し ---------- */
-.page-title { font-family: var(--font-head); font-weight: 400; font-size: clamp(40px, 8vw, 72px); line-height: 1.05; margin-top: 20px; }
+.page-title { font-family: var(--font-head); font-weight: 400; font-size: clamp(36px, 6vw, 56px); line-height: 1.05; margin-top: 14px; }
 .page-lead { max-width: 36em; margin-top: 10px; font-size: 15px; }
 
 /* ---------- パネル（クリーム色のメニュー板） ---------- */
@@ -106,9 +106,20 @@ button { cursor: pointer; }
 .notice { margin-top: 28px; font-size: 14px; display: flex; gap: 10px; align-items: center; }
 .notice svg { flex: none; }
 
+/* キー操作の表示（スマホでは出さない） */
+kbd { font-family: var(--font-body); font-size: 11px; font-weight: 700; border: 1.5px solid currentColor; border-radius: 3px; padding: 0 6px; margin-left: 10px; opacity: .85; line-height: 1.6; }
+
+/* 設定のたたみ（スマホだけ。PC では見出しを隠して常に開く） */
+.fold > summary { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 9px 12px; border: 2px solid currentColor; font-size: 14px; font-weight: 700; cursor: pointer; list-style: none; }
+.fold > summary::-webkit-details-marker { display: none; }
+.fold > summary .fold-open { color: var(--brass); }
+.fold[open] > summary { margin-bottom: 14px; }
+
 /* ---------- クイズ ---------- */
-.quiz-layout { display: grid; grid-template-columns: 300px 1fr; gap: 28px; margin-top: 28px; align-items: start; }
-.settings { display: grid; gap: 18px; font-size: 14px; }
+.quiz-layout { display: grid; grid-template-columns: 300px 1fr; gap: 28px; margin-top: 22px; align-items: start; }
+.settings { display: grid; gap: 16px; font-size: 14px; }
+.set-inline { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+.set-notes { gap: 2px; margin-top: 12px; }
 .settings h3 { font-size: 13px; font-weight: 700; color: var(--brass); margin-bottom: 6px; }
 .settings .choice { border-color: var(--cream); }
 .settings .choice button { color: var(--cream); }
@@ -119,9 +130,32 @@ button { cursor: pointer; }
 .settings .check input { accent-color: var(--brass); width: 18px; height: 18px; }
 .mode-note { font-size: 13px; opacity: .85; }
 
+.quiz-panel { margin-top: 12px; }
 .quiz-panel .disc { position: absolute; right: 22px; top: -26px; width: 84px; aspect-ratio: 1; }
-.quiz-panel .status { min-height: 1.7em; font-size: 14px; margin-top: 4px; }
-.quiz-panel .btn-row { margin-top: 16px; }
+.quiz-panel .status { min-height: 1.7em; font-size: 14px; margin: 4px 0 16px; }
+
+/* 開始ボタン：影の付いた「押せる板」 */
+.big-start {
+  display: flex; align-items: center; gap: 14px; width: 100%; height: 72px; padding: 0 22px;
+  background: var(--brass); border: 3px solid var(--ink); color: var(--green-deep);
+  font-family: var(--font-head); font-size: 28px; line-height: 1; white-space: nowrap;
+  box-shadow: 0 5px 0 var(--ink); transition: transform .08s, box-shadow .08s;
+}
+.big-start:not(:disabled):active { transform: translateY(4px); box-shadow: 0 1px 0 var(--ink); }
+.big-start:disabled { opacity: .45; cursor: default; }
+.big-start[hidden] { display: none; }
+.big-start svg { width: 26px; height: 26px; flex: none; }
+.big-start kbd { margin-left: auto; font-size: 12px; }
+.big-start.ghost { background: var(--paper); font-size: 22px; }
+.big-pair { display: grid; grid-template-columns: 1fr 1.3fr; gap: 12px; }
+.big-pair[hidden] { display: none; }
+
+/* 鍵盤：画面の下に固定 */
+.tray { position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; background: var(--green-deep); border-top: 4px solid var(--brass); padding: 14px 16px 16px; }
+.tray-inner { max-width: 1008px; margin: 0 auto; }
+.tray .piano, .tray .piano.wide { margin-top: 0; height: 210px; }
+.tray .octaves { margin: 0 0 10px; color: var(--cream); }
+.tray .octaves button { color: var(--ink); }
 .result-line { display: flex; align-items: center; gap: 16px; min-height: 48px; margin-top: 10px; flex-wrap: wrap; }
 .verdict { font-family: var(--font-head); font-size: 34px; line-height: 1; }
 .verdict.ok { color: var(--ink); }
@@ -157,7 +191,7 @@ button { cursor: pointer; }
 .octaves button:disabled { opacity: .35; }
 
 /* ---------- リズム ---------- */
-.rhythm-top { display: grid; grid-template-columns: 1fr auto; gap: 24px; align-items: end; margin-top: 24px; }
+.rhythm-top { display: grid; grid-template-columns: 1fr auto; gap: 24px; align-items: end; margin-top: 8px; }
 .bpm-box { display: flex; align-items: baseline; gap: 6px; }
 .bpm-box output { font-family: var(--font-head); font-size: clamp(48px, 9vw, 76px); line-height: 1; color: var(--red); }
 .bpm-box span { font-size: 15px; font-weight: 700; }
@@ -165,14 +199,27 @@ button { cursor: pointer; }
 .rhythm-controls input[type="range"] { width: 220px; accent-color: var(--red); }
 .rhythm-controls input[type="number"] { width: 70px; border: 2px solid var(--ink); background: var(--paper); padding: 3px 6px; }
 
-.grid-wrap { position: relative; margin-top: 18px; max-width: 860px; }
-.tap-pad { max-width: 860px; }
+/* 音符（左）と叩くボタン（右）。スマホでは .dock を画面下に固定する */
+.rhythm-panel { margin-top: 20px; }
+.rhythm-panel .rhythm-controls { margin-top: 0; }
+.play { display: grid; grid-template-columns: minmax(0, 1fr) 200px; grid-template-areas: "band band" "grid pad" "judge judge"; column-gap: 14px; margin-top: 16px; }
+.dock { display: contents; }
+.band { grid-area: band; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; padding-top: 14px; margin-bottom: 14px; border-top: 2px solid var(--ink); }
+.band .btn { padding: 11px 20px; font-size: 17px; }
+.band .btn.primary { min-width: 160px; }
+.play .grid-wrap { grid-area: grid; margin-top: 0; }
+.play .tap-pad { grid-area: pad; margin: 0; height: auto; }
+.play .judge { grid-area: judge; }
+
+.grid-wrap { position: relative; margin-top: 18px; }
 .rgrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
 .rgrid .cell { background: var(--cream-light); aspect-ratio: 2 / 1; position: relative; color: var(--ink); }
-.rgrid .cell svg { width: 100%; height: 100%; display: block; }
+.rgrid .cell svg { width: 100%; height: 100%; display: block; overflow: visible; }
 .rgrid .cell:nth-child(4n+1) { box-shadow: inset 4px 0 0 var(--ink); }
 .rgrid .cell.now { background: var(--brass); }
-.rgrid .note.next { color: var(--red); }
+/* 叩いたときのエフェクト（輪・矢印）と音符の弾み */
+.rgrid .note, .rgrid .fx { transform-box: fill-box; transform-origin: center; }
+.rgrid .fx { pointer-events: none; }
 .rgrid .note.perfect { color: #6b4d12; }
 .rgrid .note.good { color: #5f7a6b; }
 .rgrid .note.miss { color: var(--red); opacity: .5; }
@@ -210,13 +257,32 @@ button { cursor: pointer; }
 .calib p { font-size: 14px; margin-top: 6px; max-width: 40em; }
 
 /* ---------- スマホ ---------- */
+@media (min-width: 761px) {
+  .fold > summary { display: none; }
+}
+@media (max-height: 720px) and (min-width: 761px) {
+  .tray .piano, .tray .piano.wide { height: 160px; }
+}
+
 @media (max-width: 760px) {
-  .quiz-layout { grid-template-columns: 1fr; }
+  kbd, .key-help, .tap-pad small { display: none; }
+  .big-start { height: 58px; font-size: 22px; padding: 0 14px; gap: 10px; }
+  .big-start.ghost { font-size: 18px; }
+  .tray { padding: 10px 8px 12px; }
+  .tray .piano, .tray .piano.wide { height: 170px; }
+  .play { display: block; }
+  .dock { display: block; position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; background: var(--green-deep); border-top: 3px solid var(--brass); padding: 10px 12px 12px; }
+  .band { border: 0; padding: 0; margin-bottom: 10px; flex-wrap: nowrap; }
+  .band .btn { flex: 1; min-width: 0; padding: 9px 8px; font-size: 15px; border-color: var(--cream); color: var(--cream); }
+  .band .btn.primary { flex: 1.3; min-width: 0; background: var(--brass); border-color: var(--brass); color: var(--green-deep); }
+  .band #startBtn:disabled, .band #stopBtn:disabled { display: none; }
+  .play .tap-pad { height: 120px; }
+  .quiz-layout { grid-template-columns: 1fr; gap: 0; }
+  .quiz-panel { margin-top: 30px; }
   .hero { grid-template-columns: 1fr; }
   .hero .disc { position: absolute; right: 16px; top: 70px; width: 90px; opacity: .9; }
   .rhythm-top { grid-template-columns: 1fr; }
   .panel { padding: 18px 16px 22px; }
-  .piano { height: 150px; }
   .quiz-panel .disc { width: 64px; top: -20px; right: 14px; }
   .countin { font-size: 64px; }
   .rgrid { gap: 3px; }
