@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>音あて — MusCos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=M+PLUS+1p:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/tone@14.8.49/build/Tone.js"></script>
+<script type="module" src="js/quiz.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <header class="site-head">
+    <a class="brand" href="index.html">MusCos</a>
+    <nav>
+      <a href="quiz.html" aria-current="page">音あて</a>
+      <a href="rhythm.html">リズム</a>
+    </nav>
+  </header>
+
+  <h1 class="page-title">音あて</h1>
+  <p class="page-lead">鳴った音を、鍵盤で答えてください。</p>
+
+  <div class="quiz-layout">
+    <aside class="settings" aria-label="設定">
+      <div>
+        <h3>モード</h3>
+        <div class="choice" id="modeChoice">
+          <button type="button" data-mode="easy" aria-pressed="true">簡単</button>
+          <button type="button" data-mode="hard" aria-pressed="false">難関</button>
+          <button type="button" data-mode="adv" aria-pressed="false">発展</button>
+        </div>
+        <p class="mode-note" id="modeNote"></p>
+      </div>
+      <div>
+        <h3>連続モード</h3>
+        <div class="choice" id="seqChoice">
+          <button type="button" data-n="1" aria-pressed="true">1音</button>
+          <button type="button" data-n="2" aria-pressed="false">2</button>
+          <button type="button" data-n="3" aria-pressed="false">3</button>
+          <button type="button" data-n="4" aria-pressed="false">4</button>
+          <button type="button" data-n="5" aria-pressed="false">5</button>
+        </div>
+        <p class="mode-note">2〜5を選ぶと、続けて鳴った音を順番どおりに答えます。</p>
+      </div>
+      <div>
+        <h3>表示</h3>
+        <label class="check"><input type="checkbox" id="showLabels" checked> 鍵盤に音名を出す</label>
+        <div class="field" style="margin-top:8px">
+          <label for="labelStyle">音名の書き方</label>
+          <select id="labelStyle">
+            <option value="solfege">ドレミ</option>
+            <option value="letter">CDE</option>
+          </select>
+        </div>
+      </div>
+      <p class="mode-note">PCのキー操作：A S D F G H J＝ド〜シ、W E T Y U＝黒鍵。難関では続けて 3〜6 でオクターブ。R でもう一度聴く、Enter で次へ。</p>
+    </aside>
+
+    <section class="panel quiz-panel" aria-live="polite">
+      <div class="disc" id="disc" aria-hidden="true"><i></i></div>
+      <h2 id="panelTitle">簡単</h2>
+      <p class="status" id="status">「開始」を押すと音が鳴ります。</p>
+
+      <div class="btn-row">
+        <button type="button" class="btn primary" id="startBtn">開始</button>
+        <button type="button" class="btn" id="replayBtn" disabled>もう一度聴く</button>
+        <button type="button" class="btn accent" id="nextBtn" disabled>次の問題</button>
+      </div>
+
+      <div class="result-line">
+        <div class="verdict" id="verdict"></div>
+        <div class="slots" id="slots"></div>
+      </div>
+
+      <div id="piano"></div>
+      <div class="octaves" id="octaves" hidden>
+        <span>オクターブ</span>
+        <button type="button" data-oct="3">3</button>
+        <button type="button" data-oct="4">4</button>
+        <button type="button" data-oct="5">5</button>
+        <button type="button" data-oct="6">6</button>
+      </div>
+
+      <div class="stats" id="stats"></div>
+    </section>
+  </div>
+
+  <footer class="site-foot">音が出ます。スマホはマナーモードを解除してください。</footer>
+</div>
+</body>
+</html>

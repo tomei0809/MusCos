@@ -1,0 +1,22 @@
+# Claude Code（開発者個人の設定）
+CLAUDE.md
+CLAUDE.local.md
+.claude/
+
+# OS が自動で作るファイル
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# エディタ
+.vscode/
+.idea/
+
+# 機密情報（将来サーバを使うとき用）
+.env
+.env.*
+
+# 将来ツールを入れたとき用
+node_modules/
+__pycache__/
+*.log
