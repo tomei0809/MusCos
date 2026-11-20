@@ -19,7 +19,7 @@ const CALIB_CLICKS = 12;
 const CALIB_LISTEN = 4;      // 最初の4回は聴くだけ
 
 const $ = (id) => document.getElementById(id);
-const settings = load('rhythm.settings', { bpm: 96, level: '1', model: false });
+const settings = load('rhythm.settings', { bpm: 96, level: '1', model: true });
 let calibMs = load('rhythm.calib', 0);
 const best = load('rhythm.best', {});
 
